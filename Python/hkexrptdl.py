@@ -21,6 +21,16 @@ def testDBConnection():
     for x in myresult:
         print(x)
 
+def FindLastDLFutures():
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT max(rptdt) as lastdl FROM hkex_futures_contract")
+    myresult = mycursor.fetchall()
+
+    if (len(myresult)==1):
+        return datetime.combine(myresult[0][0], datetime.min.time()) + timedelta(days=1)
+    else:
+        return datetime(2019,1,1)
+
 def loadHKExFutures(dt):
 
     print('scrap futures:', dt)
@@ -151,11 +161,11 @@ def loadHKExOptions(dt):
 
 
 #testDBConnection()  #POC for Mysql
-
-dt = datetime(2019,1,1)
-while dt <= datetime.today():
+dt = FindLastDLFutures()
+print ("Contine Load from lat Day ", dt)
+while dt < datetime.today():
     if dt.weekday() < 5:  # Sat/Sun = 5,6
         loadHKExFutures(dt)
     dt = dt + timedelta(days=1)
-    
+
 #loadHKExOptions(datetime(2021, 4, 7))
