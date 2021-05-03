@@ -43,6 +43,12 @@ def loadHKExFutures(dt):
     #print (len(html))
     separator = ', '
 
+
+    #Make sure Final
+    isFinalCheck = tuple(re.findall('\\(Final\\)', html, re.MULTILINE ))
+    if len(isFinalCheck)==0:
+        return 
+
     #Extract Header Dates 
     ReportDateStrMatches = re.search('   Business Day([\\s\\S]*?)After-Hours Trading Session', html, re.MULTILINE )
     #print(ReportDateStrMatches.group())
@@ -130,10 +136,14 @@ def loadHKExOptions(dt):
         return
 
     separator = ', '
+    #Make sure Final
+    isFinalCheck = tuple(re.findall('\\(Final\\)', html, re.MULTILINE ))
+    if len(isFinalCheck)==0:
+        return 
 
     #Extract Header Dates 
     ReportDateStrMatches = re.search('   Business Day([\\s\\S]*?)After-Hours Trading Session', html, re.MULTILINE )
-    print(ReportDateStrMatches.group())
+    #print(ReportDateStrMatches.group())
     matchdates = tuple(re.findall ('(\\d\\d (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC) \\d\\d\\d\\d)', ReportDateStrMatches.group()))
     format_str="%d %b %Y"
     if (len(matchdates)==2):
@@ -169,7 +179,7 @@ def loadHKExOptions(dt):
 
             if len(cleaned)==22:
                 #APR-21  29200 C      339     401     335     396      93  |     420     428     190     196     -141   15        824  |      1870       138        917       894      +200
-                print (separator.join(cell))
+                #print (separator.join(cell))
                 contractmonth = datetime.strptime(cleaned[0], '%b-%y')
                 rptdt = dt # from parameter
                 underly = "HSI"
@@ -211,7 +221,7 @@ def loadHKExOptions(dt):
 #testDBConnection()  #POC for Mysql
 dt = FindLastDLReport('futures')
 print ("Continue furures downLoad from lat Day ", dt)
-while dt < datetime.today():
+while dt <= datetime.today():
     if dt.weekday() < 5:  # Sat/Sun = 5,6
         loadHKExFutures(dt)
     dt = dt + timedelta(days=1)
@@ -219,7 +229,7 @@ while dt < datetime.today():
 
 dt = FindLastDLReport('options')
 print ("Continue options downLoad from lat Day ", dt)
-while dt < datetime.today():
+while dt <= datetime.today():
     if dt.weekday() < 5:  # Sat/Sun = 5,6
         loadHKExOptions(dt)
     dt = dt + timedelta(days=1)

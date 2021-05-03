@@ -1,6 +1,9 @@
-SELECT count(*), max(rptdt) FROM world.hkex_options_contract;	
+SELECT count(*), max(rptdt) FROM world.hkex_futures_contract;	
+select * from hkex_futures_contract where rptdt = '2021-05-03';    
+
+
 SELECT rptdt, count(*), min(contractmonth), max(contractmonth), min(strike),  max(strike)  FROM world.hkex_options_contract group by  rptdt;
-select * from hkex_options_contract where rptdt = '2021-01-08';
+select * from hkex_options_contract where rptdt = '2021-05-03';
 
 SELECT count(*), max(rptdt) FROM world.hkex_futures_contract;
 SELECT rptdt, count(*), min(contractmonth), max(contractmonth) FROM world.hkex_futures_contract group by  rptdt;
