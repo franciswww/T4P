@@ -33,7 +33,7 @@ def xstr(s):
     return str(s)
 
 basepath = 'Z:\\hkexdata\\'
-months = ['202008']
+months = ['202007','202009']
 files = ['*_TR_AHT.csv' , '*_01_TR.csv']
 
 #my_conn=create_engine("mysql+mysqldb://t4user:t4user@francisww.asuscomm.com:9906/world")
@@ -85,7 +85,7 @@ for mth in months:
 
                 except:
                     print(sql)
-                    pass
+                    sys.exit()
                 # if i==10:
                 #     break
                 if i%10000==0:
