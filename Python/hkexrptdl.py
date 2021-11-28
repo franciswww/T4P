@@ -2,7 +2,6 @@ import sys
 import re
 import urllib.request
 from datetime import timedelta,datetime
-
 import mysql.connector
 
 mydb = mysql.connector.connect(

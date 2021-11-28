@@ -1,5 +1,83 @@
 SELECT count(*), max(rptdt) FROM world.hkex_futures_contract;	
-select * from hkex_futures_contract where rptdt = '2019-10-31';    
+select * from hkex_futures_contract where contractmonth = '2021-11-01';    
+
+select* from trades202008
+                                        where underly='HSI' and strike = 0
+                                    and month(contractmonth) = month(dt)
+                                    and date(dt) = '2021-06-18'
+                                    order by dt;
+                                    
+select * from hkex_options_contract where rptdt = '2021-11-26' and contractmonth = '2021-11-01' and cp='C'; 
+
+select rptdt, no, nh, nl, nc, nv,  '|', o, h, l, v from hkex_futures_contract where rptdt >='2021-05-21'  and contractmonth = '2021-06-01'; 
+
+create table tmp  select distinct a.contractmonth, a.rptdt, a.strike from optionsrawview a;
+select a.contractmonth, a.rptdt, a.strike, b.coi, b.coic, b.civ, b.cc, c.poi, c.coic, c.piv, c.pc, d.c as hsifc  
+from tmp a
+left join hkex_futures_contract d on (a.contractmonth=d.contractmonth and a.rptdt=d.rptdt)
+left join optionsrawview b on (a.contractmonth=b.contractmonth and a.rptdt=b.rptdt and a.strike = b.strike and b.cp ='C')
+left join optionsrawview c on (a.contractmonth=c.contractmonth and a.rptdt=c.rptdt and a.strike = c.strike and c.cp ='P')
+;
+select * from hkex_futures_contract;
+
+
+create view optionsrawview as
+select  
+contractmonth, rptdt, strike, cp,
+case when cp='C' then ifnull(sum(oi),0) else 0 end as coi,
+case when cp='C' then ifnull(sum(oic),0) else 0 end as coic,
+case when cp='C' then ifnull(sum(iv),0) else 0 end as civ,
+case when cp='C' then ifnull(sum(c),0) else 0 end as cc,
+case when cp='P' then ifnull(sum(oi),0) else 0 end as poi,
+case when cp='P' then ifnull(sum(oic),0) else 0 end as poic,
+case when cp='P' then ifnull(sum(iv),0) else 0 end as piv,
+case when cp='P' then ifnull(sum(c),0) else 0 end as pc
+from hkex_options_contract
+where 
+underly='HSI' and
+datediff(contractmonth , rptdt) < 4
+group by contractmonth, rptdt,strike,cp
+;
+
+create view optionsrawview as
+select  
+contractmonth, rptdt, strike, cp,
+ifnull(sum(oi),0) as oi,
+ifnull(sum(oic),0) as oic,
+ifnull(sum(iv),0) as iv,
+ifnull(sum(c),0) as c
+from hkex_options_contract
+where 
+underly='HSI' and
+datediff(contractmonth , rptdt) < 4
+group by contractmonth, rptdt,strike,cp
+;
+
+select  
+strike, concat(CAST(rptdt AS CHAR),cp) as dcp, concat(cast(sum(oi) as CHAR), ' ', cast(sum(oic) as CHAR) , char(13), cast(sum(iv) as CHAR), ' ',cast(sum(c) as CHAR)  ) as sample  from hkex_options_contract
+where 
+contractmonth = '2021-04-01' and
+strike>=27600 and strike<31000 and
+underly='HSI' and
+datediff(contractmonth , rptdt) < 8
+group by strike, concat(CAST(rptdt AS CHAR),cp)
+;
+
+
+select
+strike, 
+case when rptdt = '2021-04-01' and cp = 'C' then
+concat(CAST(rptdt AS CHAR),cp) as dcp, concat(cast(sum(oi) as CHAR), ' ', cast(sum(oic) as CHAR) , char(13), cast(sum(iv) as CHAR), ' ',cast(sum(c) as CHAR)) else '' end as sample
+from hkex_options_contract
+where 
+contractmonth = '2021-04-01' and
+strike>=27600 and strike<31000 and
+underly='HSI' and
+datediff(contractmonth , rptdt) < 8
+group by strike
+;
+
+
 
 -- drop table trades202008;
 select count(*) from trades;
