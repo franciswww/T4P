@@ -53,6 +53,7 @@ def getHKStockList():
     return stocks
 
 def LoadFutuDayendDAYPrice(stocks, fr, to):
+    cursor=mydb.cursor()
     batchsize=200
     mode='D'
     cnt = len(stocks)
@@ -86,10 +87,42 @@ def LoadFutuDayendDAYPrice(stocks, fr, to):
                         
                         try:
                         
-                            print(filtered_df.iloc[[0,-1]])            
+                            #print(filtered_df.iloc[[0,-1]])
+                            sql = "INSERT IGNORE INTO futudayprice (code,dt,o,h,l,c,pe,turnoverrate,v,turnover) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                            my_data = []
+                            for i,row in filtered_df.iterrows():
+
+                                dt=datetime.strptime(str(row[1]),'%Y-%m-%d %H:%M:%S')
+                                o=round(row[2],3)
+                                c=round(row[3],3)
+                                h=round(row[4],3)
+                                l=round(row[5],3)
+                                pe=round(row[8],3)
+                                turnoverrate=round(row[9],3)
+                                volume=round(row[6],3)
+                                turnover=round(row[7],3)
+                                val = (code,dt,o,h,l,c,pe,turnoverrate,volume,turnover)
+                                print(val)
+                                my_data.append(val)
+
+                                # if i==10:
+                                #     break
+                                if i%10000==0:
+                                    #mydb.commit()
+                                    #Use Execute Many to save time
+                                    cursor.executemany(sql, my_data)
+                                    print( ' batch inserted ' + str(i) + ' rows')
+                                    mydb.commit()
+                                    my_data = []
+
+                            cursor.executemany(sql, my_data)
+                            print(' batch inserted ' + str(i) + ' rows')
+                            mydb.commit()
+                            my_data = []
+
                             #filtered_df.to_csv(code+'d.csv')
                             #data.to_csv(code+'n.csv')
-                        except Exception:
+                        except Exception:                            
                             pass
                     
                         #print(data['turnover_rate'][0])   # 取第一条的换手率
@@ -151,7 +184,7 @@ def SaveFutuHistDayToSQL():
 
                 try:                    
                     my_data.append(val)
-                    i=i+1
+                    #i=i+1
 
                 except:
                     print(sql)
@@ -169,6 +202,7 @@ def SaveFutuHistDayToSQL():
             cursor.executemany(sql, my_data)
             print(file + ' batch inserted ' + str(i) + ' rows')
             mydb.commit()
+            my_data = []
 
             continue
         else:
@@ -180,4 +214,8 @@ print(stocks[-10:])
 
 #LoadFutuDayendDAYPrice(stocks, '2010-01-01', '2012-12-31')
 
-SaveFutuHistDayToSQL()
+# downlaod all historical daily data from local file made available from eariler daily download
+# table = futudayprice
+#SaveFutuHistDayToSQL()
+
+LoadFutuDayendDAYPrice(stocks, '2021-01-15', '2022-12-31')
