@@ -139,7 +139,7 @@ having day(ld) > 20;
 select * from hkex_futures_contract  where year(rptdt)=year(contractmonth) and month(rptdt)=month(contractmonth); 
 
 
-
+SELECT distinct(rptdt) from hkex_options_contract where rptdt >= '2021-01-03';
 
 SELECT rptdt, count(*), min(contractmonth), max(contractmonth), min(strike),  max(strike)  FROM world.hkex_options_contract group by  rptdt;
 select * from hkex_options_contract where rptdt = '2021-05-03';
@@ -157,3 +157,110 @@ where table_schema = 'world' and table_name = 'hkex_options_contract';
 select group_concat(column_name order by ordinal_position)
 from information_schema.columns
 where table_schema = 'world' and table_name = 'trades';
+
+
+select dt, 
+max(if(bullbear='Bull' and listing_date<dt and mce<>'Y', call_lvl, 0)), 
+max(if(bullbear='Bull' and listing_date<dt and mce='Y', call_lvl, null)), 
+min(if(bullbear='Bull' and listing_date<dt and mce='Y', call_lvl, null)), 
+sum(if(bullbear='Bull' and listing_date<dt and mce='Y', os*h, null)), 
+
+max(if(bullbear='Bull' and listing_date=dt and mce='Y', call_lvl, null)), 
+min(if(bullbear='Bull' and listing_date=dt and mce='Y', call_lvl, null)), 
+sum(if(bullbear='Bull' and listing_date=dt and mce='Y', os*h, null)), 
+
+min(if(bullbear='Bear' and listing_date<dt, call_lvl, 99999)),
+min(if(bullbear='Bear' and listing_date=dt, call_lvl, 99999))
+
+from hkex_cbbc where underly='HSI' and dt='2022-01-26'
+group by dt;
+
+
+select dt, 
+max(if(bullbear='Bull' and listing_date<dt , call_lvl, 0)) as H, 
+min(if(bullbear='Bear' and listing_date<dt , call_lvl, 99999)) as L
+from hkex_cbbc where underly='HSI'  
+group by dt;
+
+select dt, 
+max(if(bullbear='Bull' and listing_date<dt , call_lvl, 0)) as H, 
+min(if(bullbear='Bear' and listing_date<dt , call_lvl, 99999)) as L
+from hkex_cbbc where underly='HSI' 
+group by dt
+having abs(max(if(bullbear='Bull' and listing_date<dt , call_lvl, 0)) - min(if(bullbear='Bear' and listing_date<dt , call_lvl, 99999))) < 250;
+
+select listing_date as dt, 
+max(if(bullbear='Bull' and listing_date=dt , call_lvl, 0)) as H, 
+min(if(bullbear='Bear' and listing_date=dt , call_lvl, 99999)) as L
+from hkex_cbbc where underly='HSI' 
+group by listing_date;
+
+select dt,  call_lvl,round(os/(ent_ratio * 50),0) as no_fut_contracts, round(os * c) as money,
+	 dense_RANK() OVER (PARTITION BY
+                     dt 
+				order by 
+					call_lvl desc ) lvl_rank
+from hkex_cbbc 
+where  underly='HSI'  and bullbear = 'Bull' and listing_date < dt and dt = '2022-01-31';
+
+select dt,  call_lvl, round(os/(ent_ratio * 50),0) as no_fut_contracts, round(os * c) as money,
+	 DENSE_RANK() OVER (PARTITION BY
+                     dt 
+				order by 
+					call_lvl ) lvl_rank
+from hkex_cbbc 
+where  underly='HSI'  and bullbear = 'Bear' and listing_date < dt and dt = '2022-01-31';
+
+
+
+CREATE TABLE `hkex_cbbc` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cbbc_code` int(11) NOT NULL COMMENT 'CBBC Code',
+  `cbbc_name` char(30) NOT NULL COMMENT 'CBBC Name',
+  `dt` datetime NOT NULL COMMENT 'Trade Date',
+  `bv` float NOT NULL COMMENT 'No. of CBBC Bought',
+  `bavg` float NOT NULL COMMENT 'Average Price per CBBC Bought',
+  `sv` float NOT NULL COMMENT 'No. of CBBC Sold',
+  `savg` float NOT NULL COMMENT 'Average Price per CBBC Sold',
+  `os` float NOT NULL COMMENT 'No. of CBBC still out in market',
+  `pctos` float NOT NULL COMMENT '% of issue still out in market',
+  `ttl_iss_size` float NOT NULL COMMENT 'Total Issue Size',
+  `ccy` char(5) NOT NULL COMMENT 'Trading Currency',
+  `h` float NOT NULL COMMENT 'Day High',
+  `l` float NOT NULL COMMENT 'Day Low',
+  `c` float NOT NULL COMMENT 'Closing Price',
+  `v` float NOT NULL COMMENT 'Volume',
+  `turnover` float NOT NULL COMMENT 'turnover',
+  `issuer` char(3) NOT NULL COMMENT 'Issuer',
+  `underly` char(5) NOT NULL COMMENT 'Underlying',
+  `bullbear` char(5) NOT NULL COMMENT 'Bull/Bear',
+  `type` char(10) NOT NULL COMMENT 'CBBC Type',
+  `category` char(5) NOT NULL COMMENT 'CBBC Category',
+  `listing_date` datetime NOT NULL COMMENT 'Trade Date',
+  `last_trading_date` datetime DEFAULT NULL COMMENT 'Last Trading Date',
+  `maturity_date` datetime NOT NULL COMMENT 'Maturity Date',
+  `mce` char(1) NOT NULL COMMENT 'MCE',
+  `strike_ccy` char(5) NOT NULL COMMENT 'Strike/Call Currency',
+  `strike_lvl` float NOT NULL COMMENT 'Strike Level',
+  `call_lvl` float NOT NULL COMMENT 'Call Level',
+  `ent_ratio` float NOT NULL COMMENT 'Ent. Ratio',
+  `delisting_date` datetime DEFAULT NULL COMMENT 'Delisting Date',
+  `create_ts` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `mod_ts` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `reportdate` (`dt`,`cbbc_code`)
+) ENGINE=MyISAM AUTO_INCREMENT=4978059 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+select * from hkex_cbbc where call_lvl = 24500 and dt = '2022-01-31';
+select * from hkex_cbbc where cbbc_code = 54573 and call_lvl = 24500 order by dt;
+
+
+select * from hkex_cbbc where underly='HSI' and listing_date < dt  and dt =  '2021-11-09' and bullbear ='Bull';
+select * from hkex_cbbc where underly='HSI' and listing_date < dt  and dt =  '2021-11-09' and bullbear ='Bear';
+select * from hkex_cbbc where cbbc_code = 68341;
+
+select distinct listing_date from hkex_cbbc;
+
+select  * from hkex_cbbc where underly = 'HSI' and dt = '2022-01-31' and bullbear = 'Bull';
+

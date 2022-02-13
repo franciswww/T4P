@@ -8,8 +8,8 @@ import sys
 from futu import *
 #quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11111)
 
-fr='2022-01-16'
-to='2022-01-21'
+fr='2022-01-25'
+to='2022-01-26'
 
 from futu import *
 
@@ -22,11 +22,11 @@ stocks = []
 stocks.append('HK_FUTURE.999010')
 
 
-#for i in range(20000,26000,200):
-#    stocks.append('HK.HSI220107C' + str(i))
+for i in range(23000,25200,200):
+    stocks.append('HK.HSI220128C' + str(i) + "000") 
 
-#for i in range(20000,26000,200):
-#        stocks.append('HK.HSI220107P' + str(i))
+for i in range(23000,25200,200):
+        stocks.append('HK.HSI220128P' + str(i) + "000") 
 
 #for i in range(20000,26000,200):
 #    stocks.append('HK.HSI220114C' + str(i))
@@ -41,10 +41,10 @@ stocks.append('HK_FUTURE.999010')
 #    stocks.append('HK.HSI220128P' + str(i))
 
 
-stocks.append('HK.HSI220121C24400000')
-stocks.append('HK.HSI220121P24200000')
-stocks.append('HK.HSI220121C24600000')
-stocks.append('HK.HSI220121P24000000')
+stocks.append('HK.HSI220128C24400000')
+stocks.append('HK.HSI220128P24200000')
+stocks.append('HK.HSI220128C24600000')
+stocks.append('HK.HSI220128P24000000')
 stocks.append('HK.HSI220128C24400000')
 stocks.append('HK.HSI220128P24200000')
 stocks.append('HK.HSI220128C24600000')
@@ -75,7 +75,7 @@ while (j<batchsize and i<cnt) or mode=='P':
     
     if j==batchsize or i==cnt:
     
-        quote_ctx = OpenQuoteContext(host='192.168.1.128', port=11111)
+        quote_ctx = OpenQuoteContext(host='francisww.asuscomm.com', port=11111)
         #ret_sub, err_message = quote_ctx.subscribe(codes, [SubType.K_DAY], subscribe_push=False)
         # 先订阅K 线类型。订阅成功后FutuOpenD将持续收到服务器的推送，False代表暂时不需要推送给脚本
 
@@ -95,7 +95,7 @@ while (j<batchsize and i<cnt) or mode=='P':
                         dict[code] = filtered_df                    
                         print(filtered_df.iloc[[0,-1]])            
                         filtered_df.to_csv(code+ '_' + to + '.csv')
-                        #data.to_csv(code+'n.csv')
+                        #data.to_csv(code+'.csv')
 
                     except Exception:
                         pass
@@ -132,24 +132,63 @@ print('Done 0')
 #result = pd.concat([dict["HK_FUTURE.999010"], dict["HK.HSI220107C23400"], dict["HK.HSI220107P23200"]], axis=1)
 
 
-
+exit
 
 result = dict["HK_FUTURE.999010"]
-result["W244C"] = dict["HK.HSI220121C24400000"]["close"]
-result["W242P"] = dict["HK.HSI220121P24200000"]["close"]
-result["W246C"] = dict["HK.HSI220121C24600000"]["close"]
-result["W240P"] = dict["HK.HSI220121P24000000"]["close"]
-result["M244C"] = dict["HK.HSI220128C24400000"]["close"]
+result["W238P"] = dict["HK.HSI220128P23800000"]["close"]
+result["W240C"] = dict["HK.HSI220128C24000000"]["close"]
+result["W240P"] = dict["HK.HSI220128P24000000"]["close"]
+result["W242C"] = dict["HK.HSI220128C24200000"]["close"]
+result["W242P"] = dict["HK.HSI220128P24200000"]["close"]
+result["W244C"] = dict["HK.HSI220128C24400000"]["close"]
+result["W244P"] = dict["HK.HSI220128P24400000"]["close"]
+result["W246C"] = dict["HK.HSI220128C24600000"]["close"]
+result["W246P"] = dict["HK.HSI220128P24600000"]["close"]
+result["W248C"] = dict["HK.HSI220128C24800000"]["close"]
+result["W248P"] = dict["HK.HSI220128P24800000"]["close"]
+result["W250C"] = dict["HK.HSI220128C25000000"]["close"]
+result["W250P"] = dict["HK.HSI220128P25000000"]["close"]
+
+
 result["M242P"] = dict["HK.HSI220128P24200000"]["close"]
+result["M244C"] = dict["HK.HSI220128C24400000"]["close"]
+result["M244P"] = dict["HK.HSI220128P24200000"]["close"]
 result["M246C"] = dict["HK.HSI220128C24600000"]["close"]
 result["M240P"] = dict["HK.HSI220128P24000000"]["close"]
-result["WS200"] = result["W244C"] + result["W242P"]
-result["WS400"] = result["W246C"] + result["W240P"]
-result["MS200"] = result["M244C"] + result["M240P"]
+
+
+result["W248CW240P"] = result["W248C"] + result["W240P"]
+result["W246CW242P"] = result["W246C"] + result["W242P"]
+
+
+result["W240CW240P"] = result["W240C"] + result["W240P"]
+result["W242CW242P"] = result["W242C"] + result["W242P"]
+result["W244CW244P"] = result["W244C"] + result["W244P"]
+result["W246CW246P"] = result["W246C"] + result["W246P"]
+result["W248CW248P"] = result["W248C"] + result["W248P"]
+result["W250CW250P"] = result["W248C"] + result["W248P"]
+
+result["W242CW240P"] = result["W242C"] + result["W240P"]
+result["W244CW242P"] = result["W244C"] + result["W242P"]
+result["W246CW244P"] = result["W246C"] + result["W244P"]
+result["W248CW246P"] = result["W248C"] + result["W246P"]
+result["W250CW248P"] = result["W250C"] + result["W248P"]
+
+
+result["W244CW240P"] = result["W244C"] + result["W240P"]
+result["W246CW242P"] = result["W246C"] + result["W242P"]
+result["W248CW244P"] = result["W248C"] + result["W244P"]
+result["W250CW246P"] = result["W250C"] + result["W246P"]
+
+
+
+
+
+result["MS200"] = result["M244C"] + result["M242P"]
 result["MS400"] = result["M246C"] + result["M240P"]
 
 print(result)
-result.to_csv('combos.csv')
+result.to_csv('combos220128.csv')
 #loop_forever = True
 #while loop_forever:
 #    try:

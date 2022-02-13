@@ -36,6 +36,7 @@ basepath = 'Z:\\hkexdata\\'
 months = ['202007','202009']
 files = ['*_TR_AHT.csv' , '*_01_TR.csv']
 
+
 #my_conn=create_engine("mysql+mysqldb://t4user:t4user@francisww.asuscomm.com:9906/world")
 cursor=mydb.cursor()
 for mth in months:
